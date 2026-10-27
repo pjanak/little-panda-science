@@ -1,0 +1,894 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Little Panda Science</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Baloo+2:wght@600;800&display=swap">
+<style>
+/* Layout: one-column phone app, same family as Little Panda Maths. Sticky top bar with timer and stars, home grid of eight chunky topic tiles in two groups, each game one screen: prompt card, picture or diagram, big picture-answer buttons. Single bright look by choice. */
+:root{
+  --sky:#E4F3FF; --paper:#FFFFFF; --paper-warm:#FFF6E2;
+  --ink:#2A2440; --ink-soft:#615A7C; --scrim:rgba(42,36,64,.55);
+  --red:#E5392F; --red-soft:#FFE0DC; --red-deep:#B5241C;
+  --gold:#FFB915; --gold-soft:#FFF0C7; --gold-deep:#D18A00;
+  --jade:#12A582; --jade-soft:#D2F4E9; --jade-deep:#0B7A60;
+  --blue:#2F86EB; --blue-soft:#DAEAFF; --blue-deep:#1C62B8;
+  --plum:#7C4DEB; --plum-soft:#EAE1FF; --plum-deep:#5932B8;
+  --cheek:#FF8FB5; --peach:#FF7FA6; --peach-deep:#D04A78;
+  --soil:#9B6B43; --soil-deep:#6E4627; --root:#F1DDBC; --stem:#2E8B57; --leaf:#3FBF6F;
+  --display:"Baloo 2","Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;
+  --body:"Andika","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;
+  --emoji:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
+  color-scheme:light;
+}
+html,body{height:100%}
+body{
+  background:var(--sky);
+  background-image:radial-gradient(circle,var(--jade-soft) 2px,transparent 2.5px);
+  background-size:26px 26px;
+  color:var(--ink); font-family:var(--body); font-size:18px; line-height:1.45;
+  -webkit-tap-highlight-color:transparent;
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--sky)}
+button{font:inherit;color:inherit;touch-action:manipulation;cursor:pointer}
+button:focus-visible,summary:focus-visible{outline:4px solid var(--plum);outline-offset:3px}
+.app{
+  max-width:560px; margin:0 auto; min-height:100%;
+  display:flex; flex-direction:column;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+
+/* Top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;gap:10px;padding-block:10px;background:var(--sky)}
+.brand{flex:1;display:flex;align-items:center;gap:8px;min-width:0;font-family:var(--display);font-weight:800;font-size:20px;line-height:1}
+.brand svg{width:40px;height:40px;flex:none}
+.in-game .brand-name,.timing .brand-name{display:none}
+.icon-btn{width:48px;height:48px;border-radius:50%;border:0;background:var(--paper);box-shadow:0 4px 0 var(--blue-soft);display:grid;place-items:center;flex:none}
+.icon-btn svg{width:26px;height:26px}
+.stars{display:flex;align-items:center;gap:4px;background:var(--gold);color:var(--ink);border-radius:999px;padding:6px 14px 6px 10px;font-family:var(--display);font-weight:800;font-size:22px;line-height:1;box-shadow:0 4px 0 var(--gold-deep);flex:none}
+.stars svg{width:24px;height:24px}
+.stars.bump{animation:bump .5s cubic-bezier(.3,1.8,.5,1)}
+.timer-pill{display:flex;align-items:center;gap:4px;flex:none;background:var(--paper);color:var(--ink);border-radius:999px;padding:6px 11px 6px 8px;font-family:var(--display);font-weight:800;font-size:20px;line-height:1;font-variant-numeric:tabular-nums;box-shadow:0 4px 0 var(--blue-soft)}
+.timer-pill svg{width:22px;height:22px}
+.timer-pill.low{background:var(--red);color:var(--paper);box-shadow:0 4px 0 var(--red-deep);animation:bump 1s ease-in-out infinite}
+
+main{flex:1;padding-block:6px 40px}
+.screen{display:flex;flex-direction:column;gap:16px}
+
+/* Home */
+.hello{display:flex;align-items:center;gap:12px}
+.hello .panda-btn{border:0;background:none;padding:0;width:104px;height:104px;flex:none}
+.hello .panda-btn svg{width:100%;height:100%}
+.panda-btn.wiggle svg{animation:wiggle .6s ease}
+.bubble{position:relative;background:var(--paper);border-radius:22px;padding:12px 16px;font-size:19px;box-shadow:0 5px 0 var(--blue-soft);min-width:0}
+.bubble::before{content:"";position:absolute;left:-10px;top:50%;margin-top:-10px;border:10px solid transparent;border-right-color:var(--paper);border-left:0}
+.bubble b{font-family:var(--display);font-size:22px;display:block;line-height:1.1}
+.levels{display:flex;align-items:center;gap:6px;background:var(--paper);border-radius:22px;padding:6px;box-shadow:0 5px 0 var(--blue-soft)}
+.lv-label{font-family:var(--display);font-weight:800;font-size:17px;line-height:1.1;padding-inline:8px 4px;flex:none}
+.lv{flex:1;min-width:0;border:0;border-radius:16px;padding:6px 4px;background:transparent;color:var(--ink-soft);font-family:var(--display);font-weight:800;font-size:18px;line-height:1.05;display:flex;flex-direction:column;align-items:center}
+.lv i{font-style:normal;font-size:13px;color:var(--gold-deep);letter-spacing:1px}
+.lv[aria-pressed="true"]{color:var(--paper)}
+.lv[aria-pressed="true"] i{color:var(--gold)}
+.lv[data-level="easy"][aria-pressed="true"]{background:var(--jade)}
+.lv[data-level="medium"][aria-pressed="true"]{background:var(--blue)}
+.lv[data-level="hard"][aria-pressed="true"]{background:var(--red)}
+.section-h{margin:4px 0 -4px;font-family:var(--display);font-weight:800;font-size:21px;line-height:1.1}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.tile{
+  --c:var(--jade);--cs:var(--jade-soft);--cd:var(--jade-deep);
+  border:0;border-radius:28px;padding:14px 14px 16px;text-align:left;
+  background:var(--cs);box-shadow:0 7px 0 var(--cd);
+  display:flex;flex-direction:column;gap:4px;min-width:0;
+  transition:transform .12s,box-shadow .12s;
+}
+.tile:active{transform:translateY(5px);box-shadow:0 2px 0 var(--cd)}
+.tile.red{--c:var(--red);--cs:var(--red-soft);--cd:var(--red-deep)}
+.tile.blue{--c:var(--blue);--cs:var(--blue-soft);--cd:var(--blue-deep)}
+.tile.gold{--c:var(--gold-deep);--cs:var(--gold-soft);--cd:var(--gold-deep)}
+.tile.plum{--c:var(--plum);--cs:var(--plum-soft);--cd:var(--plum-deep)}
+.year{display:inline-flex;align-items:center;align-self:flex-start;background:var(--c,var(--jade));color:var(--paper);font-family:var(--display);font-weight:800;font-size:15px;letter-spacing:.03em;border-radius:10px;padding:3px 9px;line-height:1.3}
+.tile .art{height:62px;display:flex;align-items:center;justify-content:center;gap:2px;margin-block:6px;font-family:var(--emoji);font-size:40px;line-height:1}
+.tile h3{margin:0;font-family:var(--display);font-weight:800;font-size:23px;line-height:1.05;text-wrap:balance}
+.tile p{margin:0;font-size:15px;line-height:1.3;color:var(--ink-soft)}
+
+.grown{background:var(--paper);border-radius:20px;padding:4px 16px;font-size:16px;color:var(--ink-soft)}
+.grown summary{font-family:var(--display);font-weight:800;font-size:18px;color:var(--ink);padding-block:10px;cursor:pointer}
+.grown p,.grown li{max-width:62ch}
+.grown ul{padding-left:20px;margin-top:0}
+.grown li{margin-bottom:8px}
+.set-group{display:flex;flex-direction:column;gap:8px;padding-bottom:14px}
+.set-group+.set-group{border-top:2px solid var(--sky);padding-top:14px}
+.set-group h4{margin:0;font-family:var(--display);font-weight:800;font-size:18px;color:var(--ink)}
+.set-note{margin:0;font-size:16px}
+.chips{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.chip-btn{border:0;border-radius:999px;padding:9px 16px;background:var(--sky);color:var(--ink);font-family:var(--display);font-weight:800;font-size:17px;line-height:1}
+.chip-btn[aria-pressed="true"]{background:var(--plum);color:var(--paper)}
+.chip-btn.danger{background:var(--red);color:var(--paper)}
+.chip-btn:disabled{opacity:.4;cursor:default}
+
+/* Game */
+.game-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.game-head .year{white-space:nowrap}
+.game-head h2{margin:0;font-family:var(--display);font-weight:800;font-size:26px;line-height:1}
+.prompt{display:flex;align-items:center;gap:12px;background:var(--paper);border-radius:24px;padding:12px 14px;box-shadow:0 5px 0 var(--blue-soft)}
+.say-btn{width:56px;height:56px;border-radius:50%;border:0;background:var(--jade);box-shadow:0 4px 0 var(--jade-deep);display:grid;place-items:center;flex:none}
+.say-btn svg{width:30px;height:30px}
+.say-btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--jade-deep)}
+.prompt p{margin:0;font-family:var(--display);font-weight:600;font-size:21px;line-height:1.2;min-width:0;text-wrap:balance}
+.stage{display:flex;flex-direction:column;align-items:center;gap:14px;min-height:150px}
+.answers{display:grid;gap:12px;grid-template-columns:repeat(var(--cols,1),minmax(0,1fr))}
+.opt{min-height:84px;border:0;border-radius:24px;padding:10px 8px;background:var(--paper);color:var(--ink);box-shadow:0 6px 0 var(--blue-soft);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:transform .1s,box-shadow .1s,opacity .2s;min-width:0}
+.opt .oi{font-family:var(--emoji);font-size:40px;line-height:1.1}
+.opt .ol{font-family:var(--display);font-weight:800;font-size:20px;line-height:1.1;text-align:center}
+.opt .os{font-size:14px;color:var(--ink-soft);line-height:1.1;text-align:center}
+.answers.list .opt{flex-direction:row;justify-content:flex-start;gap:12px;min-height:68px;padding:10px 18px;text-align:left}
+.answers.list .opt .ol{text-align:left;font-size:19px;font-weight:600}
+.answers.two .opt:last-child:nth-child(odd){grid-column:1/-1}
+.opt:active{transform:translateY(4px);box-shadow:0 2px 0 var(--blue-soft)}
+.opt.wrong{animation:shake .4s;opacity:.35}
+.opt.right{background:var(--jade);color:var(--paper);box-shadow:0 6px 0 var(--jade-deep);animation:bump .5s cubic-bezier(.3,1.8,.5,1)}
+.opt.right .os{color:var(--paper)}
+.next{grid-column:1/-1;height:80px;border:0;border-radius:26px;background:var(--jade);color:var(--paper);font-family:var(--display);font-weight:800;font-size:32px;box-shadow:0 7px 0 var(--jade-deep);animation:rise .35s ease-out}
+.next:active{transform:translateY(5px);box-shadow:0 2px 0 var(--jade-deep)}
+.pic-card{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--paper);border-radius:32px;padding:14px 34px 12px;box-shadow:0 6px 0 var(--blue-soft);animation:pop .4s cubic-bezier(.3,1.7,.5,1)}
+.pic{font-family:var(--emoji);font-size:104px;line-height:1.1}
+.pic-name{font-family:var(--display);font-weight:800;font-size:24px;line-height:1.1;text-transform:capitalize}
+.fact{margin:0;max-width:340px;text-align:center;background:var(--jade-soft);color:var(--jade-deep);border-radius:18px;padding:10px 16px;font-family:var(--display);font-weight:600;font-size:19px;line-height:1.25;animation:rise .4s ease-out}
+
+/* Plant diagram */
+.plant{width:min(100%,300px);height:auto;overflow:visible}
+.part{cursor:pointer;transition:filter .2s}
+.part.lit{filter:drop-shadow(0 0 5px var(--gold)) drop-shadow(0 0 3px var(--gold)) brightness(1.12)}
+.part.pulse{animation:glow 1s ease-in-out 3}
+.part-name{font-family:var(--display);font-weight:800;font-size:22px;margin:0;min-height:1.3em;color:var(--jade-deep)}
+
+/* Food chain */
+.chain{display:flex;align-items:center;justify-content:center;gap:4px;width:100%}
+.slot{width:88px;height:96px;border-radius:22px;border:4px dashed var(--ink-soft);display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box;background:var(--paper);flex:none}
+.slot.filled{border:4px solid var(--jade);animation:pop .35s cubic-bezier(.3,1.7,.5,1)}
+.slot .ci{font-family:var(--emoji);font-size:42px;line-height:1}
+.slot .cl{font-family:var(--display);font-weight:800;font-size:15px;line-height:1.1}
+.arrow{font-family:var(--display);font-weight:800;font-size:30px;color:var(--ink-soft);flex:none}
+.cards{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+.card{width:96px;height:104px;border:0;border-radius:22px;background:var(--gold-soft);box-shadow:0 6px 0 var(--gold-deep);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.card .ci{font-family:var(--emoji);font-size:46px;line-height:1}
+.card .cl{font-family:var(--display);font-weight:800;font-size:17px;line-height:1.1}
+.card.wrong{animation:shake .4s}
+.card.used{visibility:hidden}
+.cap{margin:0;font-size:16px;color:var(--ink-soft);text-align:center}
+
+/* Overlays */
+.cheer{position:fixed;inset:0;z-index:40;background:var(--scrim);display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+.cheer-card{background:var(--paper);border-radius:32px;padding:20px 24px 24px;text-align:center;max-width:340px;width:100%;box-shadow:0 10px 0 var(--gold-deep);animation:pop .5s cubic-bezier(.3,1.7,.5,1)}
+.cheer-card svg.panda{width:140px;height:140px;animation:hop 1s ease-in-out infinite}
+.cheer-card h2{margin:4px 0;font-family:var(--display);font-weight:800;font-size:38px;color:var(--red);line-height:1}
+.cheer-card p{margin:0 0 16px;font-size:19px}
+.cheer-card button{width:100%;height:68px;border:0;border-radius:22px;background:var(--gold);box-shadow:0 6px 0 var(--gold-deep);font-family:var(--display);font-weight:800;font-size:26px}
+.cheer-card .hold{position:relative;overflow:hidden;margin-top:12px;height:58px;background:var(--sky);box-shadow:0 5px 0 var(--blue-soft);font-size:17px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.cheer-card .hold::before{content:"";position:absolute;inset:0 auto 0 0;width:0;background:var(--jade-soft)}
+.cheer-card .hold.holding::before{width:100%;transition:width 2s linear}
+.cheer-card .hold span{position:relative}
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+
+.pk{fill:var(--ink)} .pw{fill:var(--paper)} .pc{fill:var(--cheek);opacity:.75}
+.ps{fill:none;stroke:var(--ink);stroke-width:3.5;stroke-linecap:round}
+
+@keyframes pop{0%{transform:scale(.2)}100%{transform:scale(1)}}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-5px)}}
+@keyframes rise{from{transform:translateY(14px);opacity:.3}to{transform:none;opacity:1}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+@keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes glow{0%,100%{filter:none}50%{filter:drop-shadow(0 0 8px var(--gold)) brightness(1.2)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+@media (max-width:350px){.tiles{grid-template-columns:1fr}.slot,.card{width:80px}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="bar">
+    <button class="icon-btn" id="homeBtn" aria-label="Back to all games" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <div class="brand"><span data-panda></span><span class="brand-name">Little Panda Science</span></div>
+    <div class="timer-pill" id="timerPill" aria-label="Play time left" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v3.5l2.5 1.5M9.5 2.5h5"/></svg>
+      <span id="timerText">0:00</span>
+    </div>
+    <div class="stars" id="starBox" aria-label="Stars earned">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="pk" d="M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.6L12 17.2l-5.9 3.3 1.3-6.6L2.5 9.3l6.6-.8z"/></svg>
+      <span id="starCount">0</span>
+    </div>
+    <button class="icon-btn" id="soundBtn" aria-label="Turn sound off">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path id="soundWaves" d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"/><path id="soundX" d="M17 9l5 6M22 9l-5 6" hidden/></svg>
+    </button>
+  </header>
+
+  <main>
+    <section class="screen" id="home">
+      <div class="hello">
+        <button class="panda-btn" id="pandaBtn" aria-label="Say hello to Bao the panda"><span data-panda></span></button>
+        <div class="bubble"><b>Hi, I'm Bao!</b>Let's be scientists and find out how the world works!</div>
+      </div>
+      <div class="levels" role="group" aria-label="How tricky"><span class="lv-label">How<br>tricky?</span><button class="lv" data-level="easy" aria-pressed="true">Easy<i>★</i></button><button class="lv" data-level="medium" aria-pressed="false">Medium<i>★★</i></button><button class="lv" data-level="hard" aria-pressed="false">Hard<i>★★★</i></button></div>
+
+      <h2 class="section-h">Plants and animals</h2>
+      <div class="tiles">
+        <button class="tile" data-game="plant">
+          <span class="year">Year 1 · Plants</span>
+          <span class="art" aria-hidden="true">🌻🌱</span>
+          <h3>Parts of a Plant</h3>
+          <p>Roots, stem, leaves and flowers</p>
+        </button>
+        <button class="tile blue" data-game="groups">
+          <span class="year">Year 1 · Animals</span>
+          <span class="art" aria-hidden="true">🐸🦉🐬</span>
+          <h3>Animal Groups</h3>
+          <p>Fish, amphibians, reptiles, birds and mammals</p>
+        </button>
+        <button class="tile red" data-game="diet">
+          <span class="year">Years 1–2 · Animals</span>
+          <span class="art" aria-hidden="true">🐰🥕🦊</span>
+          <h3>Who Eats What?</h3>
+          <p>Plant-eaters, meat-eaters and food chains</p>
+        </button>
+        <button class="tile gold" data-game="habitat">
+          <span class="year">Year 2 · Habitats</span>
+          <span class="art" aria-hidden="true">🐧🌵🐙</span>
+          <h3>Animal Homes</h3>
+          <p>Where animals live and why</p>
+        </button>
+      </div>
+
+      <h2 class="section-h">Me and my world</h2>
+      <div class="tiles">
+        <button class="tile plum" data-game="senses">
+          <span class="year">Year 1 · Humans</span>
+          <span class="art" aria-hidden="true">👀👂👃</span>
+          <h3>My Body and Senses</h3>
+          <p>See, hear, smell, taste and touch</p>
+        </button>
+        <button class="tile" data-game="alive">
+          <span class="year">Year 2 · Living things</span>
+          <span class="art" aria-hidden="true">🐝🪵🪨</span>
+          <h3>Alive or Not?</h3>
+          <p>Alive, once alive or never alive</p>
+        </button>
+        <button class="tile blue" data-game="materials">
+          <span class="year">Years 1–2 · Materials</span>
+          <span class="art" aria-hidden="true">🪑🥄🧦</span>
+          <h3>What Is It Made Of?</h3>
+          <p>Wood, metal, plastic, glass and more</p>
+        </button>
+        <button class="tile red" data-game="seasons">
+          <span class="year">Year 1 · Seasons</span>
+          <span class="art" aria-hidden="true">🌷☀️🍂⛄</span>
+          <h3>Seasons and Weather</h3>
+          <p>Spring, summer, autumn and winter</p>
+        </button>
+      </div>
+
+      <details class="grown" id="settings">
+        <summary>Grown-up settings: play timer and stars</summary>
+        <div class="set-group">
+          <h4>Play timer</h4>
+          <p class="set-note">Pick how long to play. A countdown shows at the top, and Bao says when time is up.</p>
+          <div class="chips" id="timerChips" role="group" aria-label="Play time">
+            <button class="chip-btn" data-min="0" aria-pressed="true">Off</button>
+            <button class="chip-btn" data-min="5" aria-pressed="false">5 min</button>
+            <button class="chip-btn" data-min="10" aria-pressed="false">10 min</button>
+            <button class="chip-btn" data-min="15" aria-pressed="false">15 min</button>
+            <button class="chip-btn" data-min="20" aria-pressed="false">20 min</button>
+          </div>
+          <p class="set-note" id="timerStatus" hidden></p>
+        </div>
+        <div class="set-group">
+          <h4>Stars</h4>
+          <p class="set-note" id="starNote">No stars yet.</p>
+          <div class="chips" id="resetRow"><button class="chip-btn danger" id="resetBtn">Reset stars to 0</button></div>
+          <div class="chips" id="confirmRow" hidden><span class="set-note" id="confirmText"></span><button class="chip-btn danger" id="resetYes">Yes, reset</button><button class="chip-btn" id="resetNo">Cancel</button></div>
+        </div>
+      </details>
+
+      <details class="grown">
+        <summary>For grown-ups: what this covers</summary>
+        <p>Each game follows the Key Stage 1 science programme of study for England (Years 1 and 2, ages 5 to 7). Every question is read aloud, including the answer choices, so children don't need to read yet. Tap the green speaker to hear it again.</p>
+        <ul>
+          <li><b>Parts of a Plant</b> (Year 1 Plants): identify and describe the basic structure of a flowering plant. Hard asks what each part does.</li>
+          <li><b>Animal Groups</b> (Year 1 Animals): identify fish, amphibians, reptiles, birds and mammals. Hard uses tricky ones like whales, bats and penguins.</li>
+          <li><b>Who Eats What?</b> (Year 1 Animals, Year 2 Living things): carnivores, herbivores and omnivores, then simple food chains on Hard.</li>
+          <li><b>Animal Homes</b> (Year 2 Living things and habitats): match animals to habitats. Hard asks how animals are suited to where they live.</li>
+          <li><b>My Body and Senses</b> (Year 1 and 2 Animals including humans): which body part goes with each sense. Hard covers body parts, basic needs and keeping healthy.</li>
+          <li><b>Alive or Not?</b> (Year 2 Living things): things that are living, dead (once alive) and never alive. Hard includes tricky ones like fire, robots and seeds.</li>
+          <li><b>What Is It Made Of?</b> (Year 1 Everyday materials, Year 2 Uses of materials): name the material, then choose materials by their properties on Hard.</li>
+          <li><b>Seasons and Weather</b> (Year 1 Seasonal changes): the four seasons, dressing for the weather, and how day length changes.</li>
+        </ul>
+        <p>Stars are saved on this device only. There are no wrong-answer penalties: a wrong tap just fades that choice.</p>
+      </details>
+    </section>
+
+    <section class="screen" id="game" hidden>
+      <div class="game-head"><span class="year" id="gYear"></span><h2 id="gTitle"></h2></div>
+      <div class="levels" role="group" aria-label="How tricky"><span class="lv-label">How<br>tricky?</span><button class="lv" data-level="easy" aria-pressed="true">Easy<i>★</i></button><button class="lv" data-level="medium" aria-pressed="false">Medium<i>★★</i></button><button class="lv" data-level="hard" aria-pressed="false">Hard<i>★★★</i></button></div>
+      <div class="prompt">
+        <button class="say-btn" id="sayBtn" aria-label="Read the question aloud">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#fff"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"/></svg>
+        </button>
+        <p id="promptText" aria-live="polite"></p>
+      </div>
+      <div class="stage" id="stage"></div>
+      <div class="answers" id="answers"></div>
+      <details class="grown"><summary>How this works</summary><p id="gTip"></p></details>
+    </section>
+  </main>
+</div>
+
+<div class="cheer" id="cheer" hidden>
+  <div class="cheer-card" role="dialog" aria-labelledby="cheerTitle">
+    <span data-panda></span>
+    <h2 id="cheerTitle">Super scientist!</h2>
+    <p id="cheerText"></p>
+    <button id="cheerBtn">Keep going</button>
+  </div>
+</div>
+<div class="cheer" id="timesUp" hidden>
+  <div class="cheer-card" role="dialog" aria-labelledby="tuTitle">
+    <span data-panda></span>
+    <h2 id="tuTitle">Time's up!</h2>
+    <p id="tuText"></p>
+    <button id="tuDone">All done</button>
+    <button class="hold" id="tuMore"><span>Grown-ups: hold for 5 more minutes</span></button>
+  </div>
+</div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const PANDA='<svg class="panda" viewBox="0 0 120 120" aria-hidden="true"><circle class="pk" cx="27" cy="28" r="17"/><circle class="pk" cx="93" cy="28" r="17"/><circle class="pw" cx="60" cy="64" r="45" style="stroke:var(--ink);stroke-width:4"/><ellipse class="pk" cx="41" cy="60" rx="12" ry="15" transform="rotate(-22 41 60)"/><ellipse class="pk" cx="79" cy="60" rx="12" ry="15" transform="rotate(22 79 60)"/><circle class="pw" cx="43" cy="58" r="4.5"/><circle class="pw" cx="77" cy="58" r="4.5"/><circle class="pc" cx="31" cy="80" r="7"/><circle class="pc" cx="89" cy="80" r="7"/><ellipse class="pk" cx="60" cy="76" rx="7" ry="5"/><path class="ps" d="M51 85q9 9 18 0"/></svg>';
+document.querySelectorAll('[data-panda]').forEach(el=>el.outerHTML=PANDA);
+
+/* ---------- state ---------- */
+let stars=0, soundOn=true, level='easy';
+try{stars=parseInt(localStorage.getItem('lps-stars'),10)||0}catch(e){}
+try{soundOn=localStorage.getItem('lps-sound')!=='off'}catch(e){}
+try{const l=localStorage.getItem('lps-level');if(['easy','medium','hard'].includes(l))level=l}catch(e){}
+const starCount=$('#starCount'), starBox=$('#starBox');
+function showStars(){
+  starCount.textContent=stars;
+  const note=document.getElementById('starNote');if(note)note.textContent=stars?`Stars earned so far: ${stars}.`:'No stars yet.';
+  const rb=document.getElementById('resetBtn');if(rb)rb.disabled=!stars;
+}
+
+/* ---------- voice ---------- */
+/* Rank voices: British English first, then the higher-quality neural/enhanced voices, and never the novelty ones */
+let voice=null;
+function voiceScore(v){
+  const n=v.name.toLowerCase(),l=(v.lang||'').toLowerCase().replace('_','-');
+  if(!l.startsWith('en'))return -1;
+  if(/albert|bad news|bahh|bells|boing|bubbles|cellos|deranged|good news|grandma|grandpa|hysterical|jester|junior|organ|ralph|fred|superstar|trinoids|whisper|wobble|zarvox/.test(n))return -1;
+  let s=l==='en-gb'?30:/^en-(au|ie|nz)/.test(l)?20:10;
+  if(/natural|neural|premium|enhanced/.test(n))s+=40;
+  if(/google uk english female|sonia|libby|serena|kate|martha|stephanie|samantha|karen|moira|tessa|aria|jenny/.test(n))s+=20;
+  if(v.localService===false)s+=5;
+  return s;
+}
+function pickVoice(){
+  try{
+    let best=null,top=-1;
+    speechSynthesis.getVoices().forEach(v=>{const s=voiceScore(v);if(s>top){top=s;best=v}});
+    voice=best;
+  }catch(e){}
+}
+if('speechSynthesis' in window){pickVoice();try{speechSynthesis.onvoiceschanged=pickVoice}catch(e){}}
+/* iOS only lets speech start inside a tap, so unlock it with a silent utterance on the first touch */
+if('speechSynthesis' in window)document.addEventListener('pointerdown',()=>{try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}},{once:true});
+let sayTimer=null;
+function say(t){
+  if(!soundOn||!('speechSynthesis' in window))return;
+  try{
+    clearTimeout(sayTimer);
+    const busy=speechSynthesis.speaking||speechSynthesis.pending;
+    speechSynthesis.cancel();
+    /* Speaking straight after cancel() clips the first word in Chrome and Safari, so wait a moment */
+    sayTimer=setTimeout(()=>{
+      const u=new SpeechSynthesisUtterance(t);
+      if(voice){u.voice=voice;u.lang=voice.lang}else u.lang='en-GB';
+      u.rate=.85;u.pitch=1.05;
+      speechSynthesis.speak(u);
+    },busy?220:80);
+  }catch(e){}
+}
+
+/* ---------- sound effects (pentatonic scale) ---------- */
+let ac=null;
+const PENTA=[523.25,587.33,659.25,783.99,880,1046.5,1174.66,1318.51,1567.98,1760];
+function tone(f,dur,type,when,vol){
+  if(!soundOn)return;
+  try{
+    ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+    if(ac.state==='suspended')ac.resume();
+    const t=ac.currentTime+(when||0),o=ac.createOscillator(),g=ac.createGain();
+    o.type=type||'triangle';o.frequency.setValueAtTime(f,t);
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol||.16,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(g).connect(ac.destination);o.start(t);o.stop(t+dur+.05);
+  }catch(e){}
+}
+const sfx={
+  note:i=>tone(PENTA[Math.max(0,Math.min(9,i))],.25),
+  click:()=>tone(990,.06,'square',0,.04),
+  yay:()=>[0,2,4,5,7].forEach((n,i)=>tone(PENTA[n],.28,'triangle',i*.08)),
+  oops:()=>{tone(260,.22,'sine',0,.14);tone(196,.3,'sine',.13,.12)}
+};
+
+$('#soundBtn').onclick=()=>{
+  soundOn=!soundOn;
+  try{localStorage.setItem('lps-sound',soundOn?'on':'off')}catch(e){}
+  $('#soundWaves').toggleAttribute('hidden',!soundOn);
+  $('#soundX').toggleAttribute('hidden',soundOn);
+  $('#soundBtn').setAttribute('aria-label',soundOn?'Turn sound off':'Turn sound on');
+  if(!soundOn){try{speechSynthesis.cancel()}catch(e){}}else{sfx.click();say('Sound on!')}
+};
+if(!soundOn){$('#soundWaves').setAttribute('hidden','');$('#soundX').removeAttribute('hidden');$('#soundBtn').setAttribute('aria-label','Turn sound on')}
+
+/* ---------- helpers ---------- */
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const pl=(k,word)=>`${k} ${word}${k===1?'':'s'}`;
+const an=w=>(/^[aeiou]/i.test(w)?'an ':'a ')+w,An=w=>an(w).replace(/^a/,'A');
+const orList=xs=>xs.length<2?xs.join(''):xs.slice(0,-1).join(', ')+' or '+xs[xs.length-1]+'?';
+/* Each game and level deals from its own shuffled bag, so a question doesn't come back until the rest have been seen */
+const bags={};
+function draw(key,items){if(!bags[key]||!bags[key].length)bags[key]=shuffle(items.slice());return bags[key].pop()}
+const stage=$('#stage'),answers=$('#answers'),promptText=$('#promptText');
+let current=null,spoken='',timers=[];
+function later(fn,ms){timers.push(setTimeout(fn,ms))}
+function stopTimers(){timers.forEach(clearTimeout);timers=[]}
+function setPrompt(text,speech){promptText.textContent=text;spoken=speech||text;say(spoken)}
+$('#sayBtn').onclick=()=>say(spoken);
+
+/* Answer buttons: picture buttons sit in a grid, text-only answers stack as a list */
+function askOpts(opts,right,onRight){
+  answers.innerHTML='';
+  const pics=opts.every(o=>o.icon),cols=pics?(opts.length<=3?opts.length:2):1;
+  answers.className='answers'+(pics?'':' list')+(cols===2?' two':'');
+  answers.style.setProperty('--cols',cols);
+  opts.forEach(o=>{
+    const b=document.createElement('button');b.className='opt';
+    b.innerHTML=(o.icon?`<span class="oi" aria-hidden="true">${o.icon}</span>`:'')+`<span class="ol">${o.label}</span>`+(o.sub?`<span class="os">${o.sub}</span>`:'');
+    b.onclick=()=>{
+      if(o.label===right){b.classList.add('right');[...answers.children].forEach(x=>x.disabled=true);win(onRight)}
+      else{b.classList.add('wrong');b.disabled=true;sfx.oops();say(o.wrong||'Not quite. Try again!')}
+    };
+    answers.appendChild(b);
+  });
+}
+function win(after){
+  sfx.yay();stars++;
+  try{localStorage.setItem('lps-stars',stars)}catch(e){}
+  showStars();starBox.classList.remove('bump');void starBox.offsetWidth;starBox.classList.add('bump');
+  burst(60);
+  if(after)after();
+  later(showNext,1100);
+  if(stars%5===0)setTimeout(showCheer,2000);
+}
+function showNext(){
+  answers.innerHTML='';answers.className='answers';answers.style.setProperty('--cols',1);
+  const b=document.createElement('button');b.className='next';b.innerHTML='Next <span aria-hidden="true">&#10140;</span>';
+  b.onclick=()=>{b.disabled=true;sfx.click();play()};
+  answers.appendChild(b);
+}
+function showFact(f){stage.insertAdjacentHTML('beforeend',`<p class="fact">${f}</p>`)}
+/* Shared round for picture questions: one picture, a question, picture or text answers, then a fact */
+function quizRound(it){
+  stage.innerHTML=`<div class="pic-card"><span class="pic" aria-hidden="true">${it.pic}</span>${it.name?`<span class="pic-name">${it.name}</span>`:''}</div>`;
+  setPrompt(it.q,it.sayAll||(it.say||it.q)+' '+orList(it.opts.map(o=>o.label)));
+  askOpts(it.opts,it.a,()=>{showFact(it.fact);say('Yes! '+it.fact)});
+}
+const pick=(set,keys)=>keys.map(k=>({...set[k]}));
+const textOpts=(right,wrongs)=>shuffle([right,...wrongs].map(label=>({label})));
+
+/* ---------- question banks ---------- */
+const GROUPS={
+  fish:{label:'Fish',icon:'🐟',fact:'fish live in water and breathe with gills.'},
+  amphibian:{label:'Amphibian',icon:'🐸',fact:'amphibians start life in water and can live on land too.'},
+  reptile:{label:'Reptile',icon:'🦎',fact:'reptiles have dry, scaly skin.'},
+  bird:{label:'Bird',icon:'🐦',fact:'birds have feathers and wings, and lay eggs.'},
+  mammal:{label:'Mammal',icon:'🐻',fact:'mammals have hair or fur and feed their babies milk.'}
+};
+const ANIMALS={
+  easy:[['🐶','dog','mammal'],['🐱','cat','mammal'],['🐄','cow','mammal'],['🐘','elephant','mammal'],['🐰','rabbit','mammal'],['🦉','owl','bird'],['🦆','duck','bird'],['🦜','parrot','bird'],['🦅','eagle','bird'],['🐔','hen','bird'],['🐠','tropical fish','fish'],['🐡','pufferfish','fish']],
+  medium:[['🐸','frog','amphibian'],['🐍','snake','reptile'],['🐊','crocodile','reptile'],['🐢','tortoise','reptile'],['🦈','shark','fish'],['🐠','tropical fish','fish'],['🐒','monkey','mammal'],['🦒','giraffe','mammal'],['🦢','swan','bird'],['🦩','flamingo','bird']],
+  hard:[['🐋','whale','mammal','A whale lives in the sea, but it breathes air and feeds its babies milk, so it is a mammal.'],['🐬','dolphin','mammal','A dolphin breathes air through a blowhole and feeds its babies milk. It is a mammal.'],['🦇','bat','mammal','A bat can fly, but it has fur and feeds its babies milk. It is a mammal.'],['🐧','penguin','bird','A penguin cannot fly, but it has feathers and lays eggs, so it is a bird.'],['🦈','shark','fish','A shark breathes with gills, so it is a fish.'],['🐢','turtle','reptile','A turtle has scaly skin and lays eggs. It is a reptile.'],['🐸','frog','amphibian','A frog starts life as a tadpole in water, then lives on land too. It is an amphibian.'],['🐊','crocodile','reptile','A crocodile swims, but it has dry, scaly skin. It is a reptile.']]
+};
+const DIETS={
+  herbivore:{label:'Herbivore',icon:'🥬',sub:'eats plants'},
+  carnivore:{label:'Carnivore',icon:'🍖',sub:'eats meat'},
+  omnivore:{label:'Omnivore',icon:'🥪',sub:'eats both'}
+};
+const EATERS={
+  easy:[['🐰','rabbit','herbivore'],['🐄','cow','herbivore'],['🦒','giraffe','herbivore'],['🐑','sheep','herbivore'],['🐴','horse','herbivore'],['🐘','elephant','herbivore'],['🦁','lion','carnivore'],['🐯','tiger','carnivore'],['🐺','wolf','carnivore'],['🦈','shark','carnivore'],['🦉','owl','carnivore'],['🐊','crocodile','carnivore']],
+  medium:[['🐻','bear','omnivore'],['🐷','pig','omnivore'],['🦊','fox','omnivore'],['🐔','hen','omnivore'],['🧒','child','omnivore'],['🐰','rabbit','herbivore'],['🦒','giraffe','herbivore'],['🐑','sheep','herbivore'],['🦁','lion','carnivore'],['🐺','wolf','carnivore'],['🦉','owl','carnivore']]
+};
+const CHAINS=[
+  [['🌿','grass'],['🐰','rabbit'],['🦊','fox']],
+  [['🍃','leaves'],['🐛','caterpillar'],['🐦','bird']],
+  [['🌾','wheat'],['🐭','mouse'],['🦉','owl']],
+  [['🍃','leaves'],['🐌','snail'],['🦔','hedgehog']],
+  [['🌿','grass'],['🦓','zebra'],['🦁','lion']]
+];
+const HABS={
+  ocean:{label:'Ocean',icon:'🌊'},woodland:{label:'Woodland',icon:'🌳'},polar:{label:'Polar',icon:'🧊'},
+  desert:{label:'Desert',icon:'🌵'},rainforest:{label:'Rainforest',icon:'🌴'}
+};
+const HOMES={
+  easy:[['🐙','octopus','ocean'],['🐬','dolphin','ocean'],['🦀','crab','ocean'],['🦔','hedgehog','woodland'],['🐿️','squirrel','woodland'],['🦌','deer','woodland'],['🦡','badger','woodland'],['🐧','penguin','polar'],['🐻‍❄️','polar bear','polar'],['🦭','seal','polar']],
+  medium:[['🐪','camel','desert'],['🦂','scorpion','desert'],['🐒','monkey','rainforest'],['🦜','parrot','rainforest'],['🦥','sloth','rainforest'],['🦧','orangutan','rainforest'],['🐙','octopus','ocean'],['🦈','shark','ocean'],['🦔','hedgehog','woodland'],['🦉','owl','woodland'],['🐧','penguin','polar'],['🐻‍❄️','polar bear','polar']],
+  hard:[
+    {pic:'🐪',q:'How can a camel live in the hot, dry desert?',a:'It can go a long time without drinking',w:['It has thick white fur','It breathes with gills']},
+    {pic:'🐻‍❄️',q:'What keeps a polar bear warm in the snow and ice?',a:'Thick fur and a layer of fat',w:['Big ears to stay cool','Bright, colourful feathers']},
+    {pic:'🐠',q:'How can a fish breathe underwater?',a:'It has gills',w:['It holds its breath','It has a long nose']},
+    {pic:'🦆',q:"How do a duck's webbed feet help it?",a:'They help it swim',w:['They help it climb trees','They keep it warm']},
+    {pic:'🦉',q:'Owls hunt at night. What helps them?',a:'Big eyes to see in the dark',w:['Bright red feathers','A long, curly tail']},
+    {pic:'🐒',q:"How does a monkey's long tail help it in the rainforest?",a:'It holds on to branches',w:['It helps it swim','It keeps the rain off']},
+    {pic:'🐧',q:'How do penguins keep warm in the icy cold?',a:'Thick feathers and huddling together',w:['Sitting in the sun all day','Having very thin skin']},
+    {pic:'🌵',q:'How does a cactus survive in the desert?',a:'It stores water in its thick stem',w:['It drinks from the sea','It grows big, flat leaves']}
+  ]
+};
+const PARTS={
+  roots:{name:'roots',fact:'Roots take in water from the soil and hold the plant in the ground.'},
+  stem:{name:'stem',fact:'The stem holds the plant up and carries water to the leaves.'},
+  leaf:{name:'leaf',fact:'Leaves use sunlight to make food for the plant.'},
+  flower:{name:'flower',fact:'The flower makes seeds, so new plants can grow.'},
+  petal:{name:'petals',fact:'Bright petals help bring bees and butterflies to the flower.'}
+};
+const PLANT_JOBS=[
+  ['Which part takes in water from the soil?','roots'],
+  ['Which part holds the plant up and carries water?','stem'],
+  ['Which part uses sunlight to make food?','leaf'],
+  ['Which part makes the seeds?','flower'],
+  ['Which colourful part brings bees to the plant?','petal'],
+  ['Which part holds the plant in the ground?','roots']
+];
+const PARTS_BODY={
+  eyes:{label:'Eyes',icon:'👀'},ears:{label:'Ears',icon:'👂'},nose:{label:'Nose',icon:'👃'},
+  tongue:{label:'Tongue',icon:'👅'},hands:{label:'Hands',icon:'✋'}
+};
+const SENSE_OF={eyes:'sight',ears:'hearing',nose:'smell',tongue:'taste',hands:'touch'};
+const SCENES=[
+  ['🌸','smell a flower','nose'],['🍞','smell bread baking','nose'],['🌈','see a rainbow','eyes'],['⭐','see the stars at night','eyes'],
+  ['🥁','hear a drum','ears'],['🔔','hear the doorbell','ears'],['🍋','taste a sour lemon','tongue'],['🍦','taste ice cream','tongue'],
+  ['🐱','feel a soft kitten','hands'],['❄️','feel cold snow','hands']
+];
+const BODY_HARD=[
+  {pic:'💪',q:'Which part bends in the middle of your arm?',a:'Elbow',w:['Knee','Neck']},
+  {pic:'🦵',q:'Which part bends in the middle of your leg?',a:'Knee',w:['Elbow','Wrist']},
+  {pic:'🙂',q:'Which part joins your head to your body?',a:'Neck',w:['Ankle','Elbow']},
+  {pic:'✋',q:'Which part joins your hand to your arm?',a:'Wrist',w:['Knee','Shoulder']},
+  {pic:'🦶',q:'Which part joins your foot to your leg?',a:'Ankle',w:['Wrist','Neck']},
+  {pic:'🫁',q:'What do humans need to stay alive?',a:'Air, water and food',w:['Toys and games','A television']},
+  {pic:'🏃',q:'Which of these helps keep your body healthy?',a:'Exercise every day',w:['Staying up all night','Eating only sweets']},
+  {pic:'🧼',q:'Why do we wash our hands before we eat?',a:'To wash away germs',w:['To make them cold','To make them wrinkly']},
+  {pic:'🥗',q:'Which is the healthiest snack?',a:'An apple',w:['A bag of sweets','A fizzy drink']}
+];
+const ALIVE={alive:{label:'Alive',icon:'💚'},was:{label:'Once alive',icon:'🍂'},never:{label:'Never alive',icon:'🪨'}};
+const THINGS={
+  easy:[['🌻','sunflower','alive'],['🐝','bee','alive'],['🐕','dog','alive'],['🌳','tree','alive'],['🐟','fish','alive'],['🧒','child','alive'],['🦋','butterfly','alive'],['🔑','key','never'],['🚗','car','never'],['🧸','teddy','never'],['🧱','brick','never'],['💧','water','never'],['⚽','ball','never'],['🥄','spoon','never']],
+  medium:[['🪵','log','was','A log was once part of a living tree.'],['🪶','feather','was','A feather was once part of a living bird.'],['🦴','bone','was','A bone was once part of a living animal.'],['🐚','shell','was','A shell was once the home of a living sea creature.'],['🐝','bee','alive'],['🌳','tree','alive'],['🐟','fish','alive'],['🔑','key','never'],['🧸','teddy','never'],['💧','water','never']],
+  hard:[['🔥','fire','never','Fire moves and grows, but it does not eat, breathe or have babies. It has never been alive.'],['🤖','robot','never','A robot can move, but people made it. It has never been alive.'],['🌰','conker','alive','A conker is a seed. It is alive and can grow into a new tree.'],['🍄','mushroom','alive','A mushroom is alive. It grows and needs food and water.'],['🧊','ice','never','Ice is frozen water. It has never been alive.'],['🪑','wooden chair','was','A wooden chair is made from a tree that was once alive.'],['☁️','cloud','never','Clouds move and change shape, but they have never been alive.'],['🪶','feather','was','A feather was once part of a living bird.']]
+};
+const MATS={
+  wood:{label:'Wood',icon:'🪵'},metal:{label:'Metal',icon:'🔩'},plastic:{label:'Plastic',icon:'🧴'},
+  glass:{label:'Glass',icon:'🔍'},fabric:{label:'Fabric',icon:'🧶'},paper:{label:'Paper',icon:'📄'}
+};
+const OBJECTS={
+  easy:[['🪑','chair','wood'],['✏️','pencil','wood'],['🥢','chopsticks','wood',1],['🥄','spoon','metal'],['🔑','key','metal'],['🪙','coin','metal'],['🪣','bucket','plastic'],['🪥','toothbrush','plastic']],
+  medium:[['🪟','window','glass'],['🫙','jar','glass'],['👓','glasses','glass',1],['🧦','sock','fabric'],['👕','T-shirt','fabric'],['🧣','scarf','fabric'],['📰','newspaper','paper'],['✉️','envelope','paper'],['🪑','chair','wood'],['🥄','spoon','metal'],['🪣','bucket','plastic']],
+  hard:[
+    {pic:'🪟',q:'Which material is see-through?',a:'Glass',w:['Wood','Metal']},
+    {pic:'🧥',q:'Which material is waterproof and good for a raincoat?',a:'Plastic',w:['Paper','Cotton wool']},
+    {pic:'🎈',q:'Which material is bendy and stretchy?',a:'Rubber',w:['Glass','Rock']},
+    {pic:'☂️',q:'Which would make the best umbrella?',a:'Plastic',w:['Paper','Wood']},
+    {pic:'🧶',q:'Which is best for a cosy, warm jumper?',a:'Wool',w:['Metal','Glass']},
+    {pic:'🏠',q:'Which is hard and strong, good for building a house?',a:'Brick',w:['Paper','Cotton wool']},
+    {pic:'🧽',q:'Which of these can you squash?',a:'A sponge',w:['A rock','A metal spoon']},
+    {pic:'➰',q:'Which of these can you stretch?',a:'An elastic band',w:['A pencil','A brick']},
+    {pic:'🍳',q:'Why are saucepans made of metal?',a:'Metal is strong and does not melt on the cooker',w:['Metal is see-through','Metal is soft and squashy']}
+  ]
+};
+const SEASONS={spring:{label:'Spring',icon:'🌷'},summer:{label:'Summer',icon:'☀️'},autumn:{label:'Autumn',icon:'🍁'},winter:{label:'Winter',icon:'⛄'}};
+const SEASON_PICS=[
+  ['🌸','blossom','spring','Blossom grows on trees in spring.'],['🐣','baby chick','spring','Lots of baby animals are born in spring.'],['🐑','lambs','spring','Lambs are born in spring.'],
+  ['🏖️','beach day','summer','Summer is the hottest season, great for the beach.'],['🍦','ice cream','summer','Ice cream helps us cool down in hot summer weather.'],['🌻','sunflower','summer','Sunflowers grow tall in the summer sun.'],
+  ['🍂','falling leaves','autumn','Many trees lose their leaves in autumn.'],['🎃','pumpkin','autumn','Pumpkins are ready to pick in autumn.'],['🌰','conkers','autumn','Conkers fall from horse chestnut trees in autumn.'],
+  ['❄️','snowflake','winter','Snow can fall in winter, the coldest season.'],['🧤','gloves','winter','We wear gloves to keep warm in winter.'],['🧣','woolly scarf','winter','A woolly scarf keeps us cosy in winter.']
+];
+const WEATHER=[
+  {pic:'🌧️',q:'It is raining. What should you take outside?',a:{label:'Umbrella',icon:'☂️'},w:[{label:'Sunglasses',icon:'🕶️'},{label:'Flip-flops',icon:'🩴'}],fact:'An umbrella keeps you dry in the rain.'},
+  {pic:'☀️',q:'It is hot and sunny. What should you wear?',a:{label:'Sun hat',icon:'👒'},w:[{label:'Gloves',icon:'🧤'},{label:'Woolly scarf',icon:'🧣'}],fact:'A sun hat keeps the hot sun off your head.'},
+  {pic:'🌨️',q:'It is snowing. What should you wear?',a:{label:'Gloves',icon:'🧤'},w:[{label:'Sun hat',icon:'👒'},{label:'Flip-flops',icon:'🩴'}],fact:'Gloves keep your hands warm in the snow.'},
+  {pic:'🌬️',q:'It is a very windy day. What is fun to do?',a:{label:'Fly a kite',icon:'🪁'},w:[{label:'Build a snowman',icon:'⛄'},{label:'Sunbathe',icon:'😎'}],fact:'The wind lifts a kite high into the sky.'},
+  {pic:'🌦️',q:'The sun comes out while it is raining. What might you see?',a:{label:'A rainbow',icon:'🌈'},w:[{label:'The moon',icon:'🌙'},{label:'A snowman',icon:'⛄'}],fact:'Sunshine and rain together can make a rainbow.'},
+  {pic:'⛈️',q:'There is thunder and lightning. Where is safest?',a:{label:'Indoors',icon:'🏠'},w:[{label:'Under a tree',icon:'🌳'},{label:'In the park',icon:'🛝'}],fact:'Indoors is the safest place in a thunderstorm.'}
+];
+const SEASON_HARD=[
+  {pic:'🗓️',q:'Which season comes after winter?',a:'Spring',w:['Summer','Autumn']},
+  {pic:'🗓️',q:'Which season comes after summer?',a:'Autumn',w:['Spring','Winter']},
+  {pic:'🌞',q:'Which season has the longest days?',a:'Summer',w:['Winter','Autumn']},
+  {pic:'🌙',q:'Which season has the shortest days?',a:'Winter',w:['Summer','Spring']},
+  {pic:'🍂',q:'In which season do many trees lose their leaves?',a:'Autumn',w:['Spring','Summer']},
+  {pic:'🐑',q:'In which season do we see lambs and blossom?',a:'Spring',w:['Autumn','Winter']},
+  {pic:'🔢',q:'How many seasons are there in a year?',a:'Four',w:['Two','Twelve']},
+  {pic:'🥶',q:'Which season is usually the coldest in the UK?',a:'Winter',w:['Summer','Spring']}
+];
+
+/* ---------- games ---------- */
+const GAMES={
+  plant:{
+    title:'Parts of a Plant',year:'Year 1 · Plants',
+    tip:'Flowering plants have roots, a stem, leaves and flowers. Children learn to name each part and then what it does for the plant.',
+    levels:{easy:'Easy: tap the roots, stem, leaf or flower. A wrong tap makes the right part glow.',medium:'Medium: the petals join in, and there is no glowing hint.',hard:'Hard: tap the part that does each job, like taking in water.'},
+    round(){
+      const keys=level==='easy'?['roots','stem','leaf','flower']:['roots','stem','leaf','flower','petal'];
+      let target,text,speech;
+      if(level==='hard'){const j=draw('plant-hard',PLANT_JOBS);target=j[1];text=j[0];speech=j[0]+' Tap it on the plant.'}
+      else{target=draw('plant-'+level,keys);text=`Tap the ${PARTS[target].name}!`;speech=`Can you tap the ${PARTS[target].name}?`}
+      const petals=[0,60,120,180,240,300].map(a=>`<ellipse cx="120" cy="34" rx="13" ry="22" transform="rotate(${a} 120 60)"/>`).join('');
+      stage.innerHTML=`<svg class="plant" viewBox="0 0 240 300" role="img" aria-label="A flowering plant">
+        <rect x="0" y="200" width="240" height="100" rx="18" fill="var(--soil)"/>
+        <g class="part" data-part="roots" fill="none" stroke="var(--root)" stroke-width="6" stroke-linecap="round">
+          <path d="M120 200V280M120 205C118 232 108 248 92 268M120 205C123 234 136 250 152 270M120 212C112 224 96 228 78 238M120 212C130 226 148 230 166 240"/>
+          <rect x="60" y="200" width="120" height="90" fill="transparent" stroke="none"/>
+        </g>
+        <g class="part" data-part="stem"><rect x="100" y="82" width="40" height="120" fill="transparent"/><rect x="114" y="82" width="12" height="120" rx="6" fill="var(--stem)"/></g>
+        <g class="part" data-part="leaf" fill="var(--leaf)">
+          <path d="M116 158C92 128 56 134 44 148C70 170 100 170 116 158Z"/>
+          <path d="M124 128C148 98 184 104 196 118C172 140 140 140 124 128Z"/>
+        </g>
+        <g class="part" data-part="petal" fill="var(--peach)">${petals}</g>
+        <g class="part" data-part="flower"><circle cx="120" cy="60" r="15" fill="var(--gold)"/></g>
+      </svg><p class="part-name" id="partName"></p>`;
+      answers.innerHTML='';answers.className='answers';
+      setPrompt(text,speech);
+      let done=false;
+      const svg=stage.querySelector('.plant');
+      svg.onclick=e=>{
+        const g=e.target.closest('.part');if(!g||done)return;
+        const p=g.dataset.part,ok=p===target||(target==='flower'&&p==='petal');
+        if(ok){
+          done=true;g.classList.add('lit');if(target==='flower')svg.querySelectorAll('[data-part="flower"],[data-part="petal"]').forEach(x=>x.classList.add('lit'));
+          $('#partName').textContent=`The ${PARTS[target].name}`;
+          win(()=>{showFact(PARTS[target].fact);say('Yes! '+PARTS[target].fact)});
+        }else{
+          sfx.oops();$('#partName').textContent=`That's the ${PARTS[p].name}`;
+          say(`That's the ${PARTS[p].name}. Try again!`);
+          if(level==='easy'){const t=svg.querySelector(`[data-part="${target}"]`);t.classList.remove('pulse');void t.getBBox();t.classList.add('pulse')}
+        }
+      };
+    }
+  },
+  groups:{
+    title:'Animal Groups',year:'Year 1 · Animals',
+    tip:'Scientists sort animals into groups. Fish have gills and fins, amphibians start life in water, reptiles have dry scaly skin, birds have feathers, and mammals have fur and feed their babies milk.',
+    levels:{easy:'Easy: is it a bird, a mammal or a fish?',medium:'Medium: all five groups, adding amphibians and reptiles.',hard:'Hard: tricky animals like whales, bats and penguins.'},
+    round(){
+      const keys=level==='easy'?['bird','mammal','fish']:['fish','amphibian','reptile','bird','mammal'];
+      const it=draw('groups-'+level,ANIMALS[level]);
+      quizRound({pic:it[0],name:it[1],q:`Which group is ${an(it[1])} in?`,opts:pick(GROUPS,keys),a:GROUPS[it[2]].label,fact:it[3]||`${An(it[1])} is ${an(it[2])}. ${GROUPS[it[2]].fact[0].toUpperCase()+GROUPS[it[2]].fact.slice(1)}`});
+    }
+  },
+  diet:{
+    title:'Who Eats What?',year:'Years 1–2 · Animals',
+    tip:'Herbivores eat only plants, carnivores eat other animals, and omnivores eat both. A food chain shows what eats what, and every food chain starts with a plant.',
+    levels:{easy:'Easy: herbivore (plant-eater) or carnivore (meat-eater)?',medium:'Medium: omnivores, which eat both, join in.',hard:'Hard: build a food chain. Tap what gets eaten first.'},
+    round(){
+      if(level==='hard')return this.chain();
+      const keys=level==='easy'?['herbivore','carnivore']:['herbivore','carnivore','omnivore'];
+      const it=draw('diet-'+level,EATERS[level]),d=DIETS[it[2]];
+      quizRound({pic:it[0],name:it[1],q:`What does ${an(it[1])} eat?`,
+        sayAll:keys.length>2?`Is ${an(it[1])} a herbivore, which eats plants, a carnivore, which eats meat, or an omnivore, which eats both?`:`Is ${an(it[1])} a herbivore, which eats plants, or a carnivore, which eats meat?`,
+        opts:pick(DIETS,keys),a:d.label,fact:`${An(it[1])} is ${an(it[2])}. It ${d.sub==='eats both'?'eats plants and meat':d.sub}.`});
+    },
+    chain(){
+      const c=draw('chain',CHAINS);let n=0;
+      stage.innerHTML=`<div class="chain">${c.map((_,i)=>`<div class="slot" id="slot${i}"><span class="ci">?</span></div>`).join('<span class="arrow" aria-hidden="true">→</span>')}</div>
+        <p class="cap">The arrow means "is eaten by"</p>
+        <div class="cards" id="cards">${shuffle(c.map((x,i)=>i)).map(i=>`<button class="card" data-i="${i}"><span class="ci" aria-hidden="true">${c[i][0]}</span><span class="cl">${c[i][1]}</span></button>`).join('')}</div>`;
+      answers.innerHTML='';answers.className='answers';
+      setPrompt('Make a food chain! Tap what gets eaten first.',`Let's make a food chain with ${c[0][1]}, ${c[1][1]} and ${c[2][1]}. Tap what gets eaten first.`);
+      $('#cards').onclick=e=>{
+        const b=e.target.closest('.card');if(!b||b.classList.contains('used'))return;
+        const i=+b.dataset.i;
+        if(i===n){
+          b.classList.add('used');const s=$('#slot'+n);s.classList.add('filled');s.innerHTML=`<span class="ci">${c[n][0]}</span><span class="cl">${c[n][1]}</span>`;
+          sfx.note(n*2);n++;
+          if(n===3){const f=`The ${c[1][1]} eats the ${c[0][1]}, and the ${c[2][1]} eats the ${c[1][1]}. Food chains start with a plant.`;win(()=>{showFact(f);say('Yes! '+f)})}
+          else say(n===1?`Yes! Now, what eats the ${c[0][1]}?`:`Yes! What eats the ${c[1][1]}?`);
+        }else{
+          b.classList.remove('wrong');void b.offsetWidth;b.classList.add('wrong');sfx.oops();
+          say(n===0?'Not quite. Food chains start with a plant.':`Not quite. What eats the ${c[n-1][1]}?`);
+        }
+      };
+    }
+  },
+  habitat:{
+    title:'Animal Homes',year:'Year 2 · Habitats',
+    tip:'A habitat is the place where an animal or plant lives. It gives them the food, water and shelter they need, and animals are suited to their own habitat.',
+    levels:{easy:'Easy: ocean, woodland or polar?',medium:'Medium: deserts and rainforests join in.',hard:'Hard: how is each animal suited to its home?'},
+    round(){
+      if(level==='hard'){const h=draw('hab-hard',HOMES.hard);return quizRound({pic:h.pic,q:h.q,opts:textOpts(h.a,h.w),a:h.a,fact:h.a+'.'})}
+      const keys=level==='easy'?['ocean','woodland','polar']:['ocean','woodland','polar','desert','rainforest'];
+      const it=draw('hab-'+level,HOMES[level]);
+      quizRound({pic:it[0],name:it[1],q:`Where does ${an(it[1])} live?`,say:`Where does ${an(it[1])} live? In the`,opts:pick(HABS,keys),a:HABS[it[2]].label,fact:`${An(it[1])} lives in ${it[2]==='polar'?'the cold polar lands':'the '+it[2]}.`});
+    }
+  },
+  senses:{
+    title:'My Body and Senses',year:'Year 1 · Humans',
+    tip:'We have five senses: sight, hearing, smell, taste and touch. Each one uses a different part of the body. Hard also covers naming body parts and what we need to stay healthy (Year 2).',
+    levels:{easy:'Easy: which body part do you use? Three to choose from.',medium:'Medium: all five body parts to choose from.',hard:'Hard: name body parts and choose what keeps us healthy.'},
+    round(){
+      if(level==='hard'){const h=draw('body-hard',BODY_HARD);return quizRound({pic:h.pic,q:h.q,opts:textOpts(h.a,h.w),a:h.a,fact:`${h.a}.`})}
+      const s=draw('sense-'+level,SCENES),part=s[2];
+      const keys=level==='easy'?shuffle([part,...shuffle(Object.keys(PARTS_BODY).filter(k=>k!==part)).slice(0,2)]):Object.keys(PARTS_BODY);
+      quizRound({pic:s[0],q:`Which body part helps you ${s[1]}?`,opts:pick(PARTS_BODY,keys),a:PARTS_BODY[part].label,
+        fact:`You use your ${PARTS_BODY[part].label.toLowerCase()} to ${s[1]}. That's your sense of ${SENSE_OF[part]}.`});
+    }
+  },
+  alive:{
+    title:'Alive or Not?',year:'Year 2 · Living things',
+    tip:'Living things grow, move, need food and water, and have young. Some things were once alive, like a log from a tree. Other things, like rocks and metal, have never been alive.',
+    levels:{easy:'Easy: alive or never alive?',medium:'Medium: once alive things join in, like logs and feathers.',hard:'Hard: tricky things like fire, robots, seeds and clouds.'},
+    round(){
+      const keys=level==='easy'?['alive','never']:['alive','was','never'];
+      const it=draw('alive-'+level,THINGS[level]);
+      const facts={alive:`The ${it[1]} is alive. It grows and needs food and water.`,never:`The ${it[1]} has never been alive.`,was:`The ${it[1]} was once alive.`};
+      quizRound({pic:it[0],name:it[1],q:`Is the ${it[1]} alive?`,say:`Is the ${it[1]}`,opts:pick(ALIVE,keys),a:ALIVE[it[2]].label,fact:it[3]||facts[it[2]]});
+    }
+  },
+  materials:{
+    title:'What Is It Made Of?',year:'Years 1–2 · Materials',
+    tip:'Everyday objects are made from materials like wood, metal, plastic, glass, fabric and paper. Each material has properties, such as hard, bendy, see-through or waterproof, that make it right for a job.',
+    levels:{easy:'Easy: wood, metal or plastic?',medium:'Medium: glass, fabric and paper join in.',hard:'Hard: choose a material by what it is like, and why it suits a job.'},
+    round(){
+      if(level==='hard'){const h=draw('mat-hard',OBJECTS.hard);return quizRound({pic:h.pic,q:h.q,opts:textOpts(h.a,h.w),a:h.a,fact:`${h.a}.`})}
+      const keys=level==='easy'?['wood','metal','plastic']:['wood','metal','plastic','glass','fabric','paper'];
+      const it=draw('mat-'+level,OBJECTS[level]);
+      const many=it[3];
+      quizRound({pic:it[0],name:it[1],q:`What ${many?'are':'is'} the ${it[1]} made of?`,opts:pick(MATS,keys),a:MATS[it[2]].label,fact:`${many?'These':'This'} ${it[1]} ${many?'are':'is'} made of ${it[2]}.`});
+    }
+  },
+  seasons:{
+    title:'Seasons and Weather',year:'Year 1 · Seasons',
+    tip:'There are four seasons: spring, summer, autumn and winter. The weather changes with the seasons, and the days are longest in summer and shortest in winter.',
+    levels:{easy:'Easy: which season does the picture show?',medium:'Medium: what to wear and do in different weather.',hard:'Hard: the order of the seasons and how day length changes.'},
+    round(){
+      if(level==='hard'){const h=draw('sea-hard',SEASON_HARD);return quizRound({pic:h.pic,q:h.q,opts:textOpts(h.a,h.w),a:h.a,fact:`${h.a}.`})}
+      if(level==='medium'){const w=draw('weather',WEATHER);return quizRound({pic:w.pic,q:w.q,opts:shuffle([w.a,...w.w]),a:w.a.label,fact:w.fact})}
+      const it=draw('sea-easy',SEASON_PICS);
+      quizRound({pic:it[0],name:it[1],q:`Which season is it?`,opts:pick(SEASONS,['spring','summer','autumn','winter']),a:SEASONS[it[2]].label,fact:it[3]});
+    }
+  }
+};
+
+/* ---------- navigation ---------- */
+const home=$('#home'),game=$('#game'),homeBtn=$('#homeBtn');
+function play(){stopTimers();current.round()}
+function setTip(){$('#gTip').textContent=current.tip+' '+current.levels[level]}
+document.querySelectorAll('.tile').forEach(t=>t.onclick=()=>{
+  sfx.click();current=GAMES[t.dataset.game];
+  $('#gYear').textContent=current.year;$('#gYear').style.setProperty('--c',getComputedStyle(t).getPropertyValue('--c'));
+  $('#gTitle').textContent=current.title;setTip();
+  document.body.classList.add('in-game');home.hidden=true;game.hidden=false;homeBtn.hidden=false;window.scrollTo(0,0);
+  play();
+});
+homeBtn.onclick=()=>{sfx.click();stopTimers();try{speechSynthesis.cancel()}catch(e){}game.hidden=true;home.hidden=false;homeBtn.hidden=true;document.body.classList.remove('in-game');window.scrollTo(0,0)};
+$('#pandaBtn').onclick=e=>{const b=e.currentTarget;b.classList.remove('wiggle');void b.offsetWidth;b.classList.add('wiggle');sfx.yay();say(stars?`Hi, I'm Bao! You have ${pl(stars,'star')}. Pick a game!`:"Hi, I'm Bao the panda! Let's be scientists. Pick a game!")};
+
+/* ---------- difficulty ---------- */
+const LEVEL_SAY={easy:'Easy! Let\'s start exploring.',medium:'Medium! A bit trickier.',hard:'Hard! Super scientist questions. You can do it!'};
+function showLevel(){document.querySelectorAll('.lv').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.level===level)))}
+showLevel();
+document.querySelectorAll('.lv').forEach(b=>b.onclick=()=>{
+  if(b.dataset.level===level)return;
+  level=b.dataset.level;
+  try{localStorage.setItem('lps-level',level)}catch(e){}
+  showLevel();sfx.click();
+  if(game.hidden)say(LEVEL_SAY[level]);
+  else{setTip();play()}
+});
+
+/* ---------- cheer + confetti ---------- */
+function showCheer(){
+  if(!$('#timesUp').hidden)return;
+  $('#cheerText').textContent=`You have ${stars} stars! Bao is so proud of you.`;
+  $('#cheer').hidden=false;burst(160);say(`Super scientist! You have ${stars} stars!`);
+}
+$('#cheerBtn').onclick=()=>{sfx.click();$('#cheer').hidden=true};
+
+const cv=$('#confetti'),cx=cv.getContext('2d');let parts=[],running=false;
+const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function palette(){const s=getComputedStyle(document.documentElement);return['--red','--gold','--jade','--blue','--plum','--cheek'].map(v=>s.getPropertyValue(v).trim())}
+function burst(n){
+  if(reduce)return;
+  const dpr=window.devicePixelRatio||1;cv.width=innerWidth*dpr;cv.height=innerHeight*dpr;cx.setTransform(dpr,0,0,dpr,0,0);
+  const cols=palette();
+  for(let i=0;i<n;i++)parts.push({x:innerWidth/2+(Math.random()-.5)*80,y:innerHeight*.45,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,r:5+Math.random()*5,c:cols[i%cols.length],rot:Math.random()*6,vr:(Math.random()-.5)*.4,life:0,round:Math.random()<.4});
+  if(!running){running=true;requestAnimationFrame(tick)}
+}
+function tick(){
+  cx.clearRect(0,0,innerWidth,innerHeight);
+  parts=parts.filter(p=>p.life<120&&p.y<innerHeight+30);
+  parts.forEach(p=>{p.life++;p.vy+=.38;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;cx.save();cx.translate(p.x,p.y);cx.rotate(p.rot);cx.fillStyle=p.c;if(p.round){cx.beginPath();cx.arc(0,0,p.r/2,0,7);cx.fill()}else cx.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);cx.restore()});
+  if(parts.length)requestAnimationFrame(tick);else{running=false;cx.clearRect(0,0,innerWidth,innerHeight)}
+}
+
+/* ---------- reset stars ---------- */
+const resetRow=$('#resetRow'),confirmRow=$('#confirmRow');
+$('#resetBtn').onclick=()=>{sfx.click();$('#confirmText').textContent=`Reset all ${pl(stars,'star')} to 0?`;resetRow.hidden=true;confirmRow.hidden=false};
+$('#resetNo').onclick=()=>{sfx.click();confirmRow.hidden=true;resetRow.hidden=false};
+$('#resetYes').onclick=()=>{
+  stars=0;try{localStorage.setItem('lps-stars','0')}catch(e){}
+  if(timer.end){timer.base=0;saveTimer()}
+  showStars();sfx.click();confirmRow.hidden=true;resetRow.hidden=false;say('Stars reset. Time for a fresh start!');
+};
+showStars();
+
+/* ---------- play timer ---------- */
+/* The end time is saved, so reloading the page doesn't restart the countdown */
+const timerPill=$('#timerPill'),timerText=$('#timerText'),timesUpBox=$('#timesUp');
+let timer={end:0,base:0,min:0,warned:false},ticker=null,lastBase=0;
+try{const t=JSON.parse(localStorage.getItem('lps-timer')||'null');if(t&&t.end>Date.now())timer=t}catch(e){}
+function saveTimer(){try{if(timer.end)localStorage.setItem('lps-timer',JSON.stringify(timer));else localStorage.removeItem('lps-timer')}catch(e){}}
+const clock=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+function setTimer(min,base){
+  timer=min?{end:Date.now()+min*60000,base:base??stars,min,warned:false}:{end:0,base:0,min:0,warned:false};
+  saveTimer();renderTimer();
+}
+function renderTimer(){
+  const on=timer.end>0;
+  timerPill.hidden=!on;document.body.classList.toggle('timing',on);
+  document.querySelectorAll('#timerChips .chip-btn').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.min===(on?timer.min:0))));
+  $('#timerStatus').hidden=!on;
+  clearInterval(ticker);
+  if(on){updateTimer();ticker=setInterval(updateTimer,1000)}
+}
+function updateTimer(){
+  const left=timer.end-Date.now();
+  timerText.textContent=clock(left);
+  timerPill.setAttribute('aria-label',`Play time left: ${clock(left)}`);
+  $('#timerStatus').textContent=`${clock(left)} left. Play ends at ${new Date(timer.end).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}.`;
+  timerPill.classList.toggle('low',left<=60000);
+  if(left>0&&left<=60000&&!timer.warned){timer.warned=true;saveTimer();say('One minute left!')}
+  if(left<=0)timesUp();
+}
+function timesUp(){
+  const earned=Math.max(0,stars-timer.base);
+  lastBase=timer.base;setTimer(0);stopTimers();
+  $('#tuText').textContent=earned?`You earned ${pl(earned,'star')} this time. Great work!`:'Great exploring today!';
+  $('#cheer').hidden=true;timesUpBox.hidden=false;burst(120);
+  say(`Time's up! ${earned?`You earned ${pl(earned,'star')}. `:''}Well done!`);
+}
+document.querySelectorAll('#timerChips .chip-btn').forEach(b=>b.onclick=()=>{
+  const min=+b.dataset.min;sfx.click();setTimer(min);
+  say(min?`Timer set for ${min} minutes. Have fun!`:'Timer off.');
+});
+$('#tuDone').onclick=()=>{sfx.click();timesUpBox.hidden=true;if(!game.hidden)homeBtn.click()};
+/* Holding for 2 seconds keeps a quick tap from a child from adding time */
+const more=$('#tuMore');let holdT=null;
+more.addEventListener('pointerdown',e=>{
+  e.preventDefault();more.classList.add('holding');
+  holdT=setTimeout(()=>{more.classList.remove('holding');timesUpBox.hidden=true;setTimer(5,lastBase);sfx.yay();say('Five more minutes!')},2000);
+});
+['pointerup','pointerleave','pointercancel'].forEach(ev=>more.addEventListener(ev,()=>{clearTimeout(holdT);more.classList.remove('holding')}));
+more.addEventListener('contextmenu',e=>e.preventDefault());
+renderTimer();
+})();
+</script>
+</body>
+</html>
